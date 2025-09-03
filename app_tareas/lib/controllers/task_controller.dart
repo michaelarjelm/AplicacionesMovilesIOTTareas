@@ -1,7 +1,7 @@
 import '../models/task.dart';
+import 'package:flutter/foundation.dart';
 
-class TaskController
-{
+class TaskController extends ChangeNotifier {
     final List<Task> _tasks = [
         Task(
             title: "Revisar las evaluaciones de App Movil",
@@ -40,4 +40,24 @@ class TaskController
             return byFilter && byQuery;
         }).toList();
     }
-};
+
+    void setQuery(String value){
+        _query = value;
+        notifyListeners();
+    }
+
+    void setFilter(TaskFilter value){
+        _query = value;
+        notifyListeners();
+    }
+
+    void toggle(Task t, bool v){
+        t.done = v;
+        notifyListeners();
+    }
+
+    void add(String title, {String? note, DateTime? due}){
+        _tasks.insert(0, Task(title: title, note: note, due: due));
+        notifyListeners();
+    }
+}
