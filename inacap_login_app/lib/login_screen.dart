@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:inacap_login_app/welcome_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,14 +9,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Una "llave" global para identificar nuestro formulario
   final _formKey = GlobalKey<FormState>();
-
-  // Controladores para leer el texto de los campos de email y contraseña.
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
-  // Esta función se ejecuta cuando el widget es destruido.
 
   @override
   void dispose() {
@@ -26,40 +21,34 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _ingresar() {
-
-
     final esValido = _formKey.currentState?.validate() ?? false;
 
     if (esValido) {
-
-      print(" ¡Formulario Válido!");
-      print("Email: ${_emailController.text}");
-      
-
-    } else {
-
-      print(" ¡Formulario Inválido!");
+      final email = _emailController.text;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => WelcomeScreen(userEmail: email),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Scaffold es la estructura básica de una pantalla (barra superior, cuerpo, etc.)
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login INACAP'),
-        backgroundColor: Colors.red, //  Estilo corporativo
+        backgroundColor: Colors.red,
         foregroundColor: Colors.white,
       ),
-      body: Center( // Centra el contenido
-        child: SingleChildScrollView( 
-          padding: const EdgeInsets.all(16.0), 
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
           child: Form(
-            key: _formKey, 
-            child: Column( //  columna vertical
-              mainAxisSize: MainAxisSize.min, 
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // --- CAMPO DE CORREO ELECTRÓNICO (RF1, RF2) ---
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -71,21 +60,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Por favor, ingresa tu correo'; 
+                      return 'Por favor, ingresa tu correo';
                     }
                     if (!value.contains('@')) {
-                      return 'El correo debe contener un @'; 
+                      return 'El correo debe contener un @';
                     }
                     return null;
                   },
                 ),
-
-                const SizedBox(height: 16), 
-
-                // --- CAMPO DE CONTRASEÑA ---
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true, // Oculta el texto de la contraseña
+                  obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Contraseña',
                     prefixIcon: Icon(Icons.lock),
@@ -96,20 +82,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       return 'Por favor, ingresa tu contraseña';
                     }
                     if (value.length < 6) {
-                      return 'La contraseña debe tener al menos 6 caracteres'; 
+                      return 'La contraseña debe tener al menos 6 caracteres';
                     }
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 24),
-
-                // --- BOTÓN DE INGRESO ---
                 SizedBox(
-                  width: double.infinity, // Hace que el botón ocupe todo el ancho
+                  width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _ingresar, // Llama a nuestra función al presionar
+                    onPressed: _ingresar,
                     child: const Text('Ingresar'),
                   ),
                 ),
