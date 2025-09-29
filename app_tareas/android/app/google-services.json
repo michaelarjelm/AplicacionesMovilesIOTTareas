@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "691800845122",
+    "project_id": "tareasapp3000",
+    "storage_bucket": "tareasapp3000.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:691800845122:android:66203d4b2657c189c0f6db",
+        "android_client_info": {
+          "package_name": "com.example.app_tareas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDExQr6Q1rLKLgHM9SqjowWw6dfJfTeMZk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

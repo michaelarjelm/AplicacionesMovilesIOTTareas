@@ -1,3 +1,5 @@
+import 'package:app_tareas/controllers/auth_controller.dart';
+import 'package:app_tareas/repositories/auth_repository.dart';
 import 'package:app_tareas/task_screen.dart';
 import 'package:flutter/material.dart'; // Importa las herramientas visuales de Flutter
 
@@ -22,6 +24,8 @@ class _LoginFieldsState extends State<LoginFields> {
       false; // Para indicar si está cargando (ej. al enviar el formulario)
   String? _error; // Para guardar y mostrar un posible mensaje de error
 
+  final AuthController _auth = AuthController(AuthRepository());
+
   @override
   void dispose() {
     // Libera los recursos de los controladores cuando el widget se destruye
@@ -34,30 +38,38 @@ class _LoginFieldsState extends State<LoginFields> {
     // Lógica para enviar el formulario
     FocusScope.of(context).unfocus(); // Oculta el teclado
     final ok = _formKey.currentState?.validate() ?? false; // Valida los campos
-    if (!ok)return; //Si no es válido no continua
+    if (!ok) return; //Si no es válido no continua
 
     setState(() {
-      _loading =true;
-      _error =null;
+      _loading = true;
+      _error = null;
     });
 
     try {
-      await Future.delayed(const Duration(milliseconds: 8000)); // Simula una llamada de red (auth).
+      final email = _emailCtrl.text.trim();
+      final password = _passCtrl.text.trim();
 
-      if (!mounted) return;                                    // Seguridad: evita usar context si el widget se removió.
-      Navigator.of(context).pushReplacement(                   // Reemplaza la pantalla actual por la de Tareas.
-        MaterialPageRoute(builder: (_) => const TaskScreen()),// Define la ruta a TasksScreen.
-      );
-    } catch (e) {                                              // Si algo falla (ej. credenciales/red) entra aquí.
-      if (!mounted) return;                                    // Evita setState si el widget ya no existe.
-      setState(() => _error = 'Credenciales inválidas o error de red'); // Guarda un mensaje de error global.
-      ScaffoldMessenger.of(context).showSnackBar(              // Muestra un SnackBar con feedback al usuario.
-        const SnackBar(content: Text('No pudimos iniciar sesión')),
-      );
-    } finally {                                                // Se ejecuta siempre (haya éxito o error).
-      if (mounted) setState(() => _loading = false);           // Apaga el modo cargando y re-habilita la UI.
+      final errorMessage = await _auth.login(email, password);
+
+      if (!mounted)
+        return; // Seguridad: evita usar context si el widget se removió.
+
+      if (errorMessage == null) {}
+
+      if (errorMessage == null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const TaskScreen()),
+        );
+      } else {
+        setState(() => _error = errorMessage);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
-  }  
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +104,6 @@ class _LoginFieldsState extends State<LoginFields> {
               ), // Estilo del texto
               textAlign: TextAlign.center, // Centra el texto
             ),
-
             TextFormField(
               // Campo de texto para el email
               enabled:
@@ -166,26 +177,29 @@ class _LoginFieldsState extends State<LoginFields> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
-                  foregroundColor: Colors.white
+                  foregroundColor: Colors.white,
                 ),
-                onPressed: _loading?null:_submit,
+                onPressed: _loading ? null : _submit,
                 child: _loading
-                ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                ) :const Text("Ingresar"),               
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : const Text("Ingresar"),
               ),
             ),
-             const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-             TextButton(
-              onPressed: _loading?null:(){},
+            TextButton(
+              onPressed: _loading ? null : () {},
               child: const Text("¿Olvidaste tu contraseña?"),
-             )
+            ),
           ],
         ),
       ),
