@@ -22,6 +22,9 @@ class _TaskScreenState extends State<TaskScreen> {
   void initState() {
     super.initState();
     _ctrl = TaskController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _ctrl.load();
+    });
   }
 
   @override

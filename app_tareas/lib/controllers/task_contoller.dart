@@ -1,20 +1,15 @@
 // Importa utilidades de Flutter (como ChangeNotifier)
+import 'package:app_tareas/repositories/task_repository.dart';
 import 'package:flutter/foundation.dart';
 // Importa el modelo de datos de tareas
 import '../models/task.dart';
 
 // Controlador que maneja la lista de tareas y la lógica
 class TaskController extends ChangeNotifier {
+  TaskController({TaskRepository? repo}) : _repo = repo ?? TaskRepository();
+  final TaskRepository _repo;
   // Lista privada de tareas iniciales (3 de ejemplo)
-  final List<Task> _tasks = [
-    Task(
-      title: 'Revisar enunciado de evaluación',
-      note: 'Sección B',
-      due: DateTime.now().add(const Duration(days: 1)), // fecha límite mañana
-    ),
-    Task(title: 'Subir rúbrica a Aula', done: true), // tarea ya completada
-    Task(title: 'Responder correos de alumnos'),
-  ];
+  final List<Task> _tasks = [];
 
   // Texto para búsqueda
   String _query = '';
@@ -38,12 +33,13 @@ class TaskController extends ChangeNotifier {
     return _tasks.where((t) {
       // Filtra por estado
       final byFilter = switch (_filter) {
-        TaskFilter.all => true,    // todas
+        TaskFilter.all => true, // todas
         TaskFilter.pending => !t.done, // solo no completadas
-        TaskFilter.done => t.done,     // solo completadas
+        TaskFilter.done => t.done, // solo completadas
       };
       // Filtra por coincidencia con el texto
-      final byQuery = q.isEmpty ||
+      final byQuery =
+          q.isEmpty ||
           t.title.toLowerCase().contains(q) ||
           (t.note?.toLowerCase().contains(q) ?? false);
 
@@ -52,18 +48,26 @@ class TaskController extends ChangeNotifier {
     }).toList();
   }
 
-  // ----- Mutaciones (acciones que cambian datos) -----
+  Future<void> load() => _reloadFromRepository();
+
+  Future<void> _reloadFromRepository() async {
+    final rows = await _repo.findFiltered(filter: filter, query: query);
+    _tasks
+      ..clear()
+      ..addAll(rows.map((r) => r.task));
+    notifyListeners();
+  }
 
   // Cambia el texto de búsqueda
   void setQuery(String value) {
     _query = value;
-    notifyListeners(); // avisa a la interfaz de usuario (UI) que hubo un cambio, para que se vuelva a redibujar.
+    _reloadFromRepository(); // avisa a la interfaz de usuario (UI) que hubo un cambio, para que se vuelva a redibujar.
   }
 
   // Cambia el filtro de tareas
   void setFilter(TaskFilter f) {
     _filter = f;
-    notifyListeners();
+    _reloadFromRepository();
   }
 
   // Marca o desmarca una tarea como completada
@@ -73,9 +77,10 @@ class TaskController extends ChangeNotifier {
   }
 
   // Agrega una nueva tarea al inicio de la lista
-  void add(String title, {String? note, DateTime? due}) {
-    _tasks.insert(0, Task(title: title, note: note, due: due));
-    notifyListeners();
+  void add(String title, {String? note, DateTime? due}) async {
+    final task = Task(title: title, note: note, due: due);
+    await _repo.create(task);
+    _reloadFromRepository();
   }
 
   // Elimina una tarea de la lista
