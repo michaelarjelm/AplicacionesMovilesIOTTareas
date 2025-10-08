@@ -11,6 +11,8 @@ class TaskController extends ChangeNotifier {
   // Lista privada de tareas iniciales (3 de ejemplo)
   final List<Task> _tasks = [];
 
+  final Map<Task, String> _idByTask = {};
+
   // Texto para búsqueda
   String _query = '';
   // Filtro actual (todas, pendientes o completadas)
@@ -55,6 +57,10 @@ class TaskController extends ChangeNotifier {
     _tasks
       ..clear()
       ..addAll(rows.map((r) => r.task));
+
+    _idByTask
+      ..clear()
+      ..addEntries(rows.map((r) => MapEntry(r.task, r.id)));
     notifyListeners();
   }
 
@@ -71,8 +77,14 @@ class TaskController extends ChangeNotifier {
   }
 
   // Marca o desmarca una tarea como completada
-  void toggle(Task t, bool v) {
-    t.done = v;
+  Future<void> toggle(Task task, bool v) async {
+    final id = _idByTask[task];
+    if (id == null) {
+      await _reloadFromRepository();
+      return;
+    }
+    await _repo.setDone(id, v);
+
     notifyListeners();
   }
 
@@ -84,8 +96,14 @@ class TaskController extends ChangeNotifier {
   }
 
   // Elimina una tarea de la lista
-  void remove(Task t) {
-    _tasks.remove(t);
-    notifyListeners();
+  Future<void> remove(Task task) async {
+    final id = _idByTask[task];
+    if (id == null) {
+      await _reloadFromRepository();
+      return;
+    }
+    await _repo.delete(id);
+
+    _reloadFromRepository();
   }
 }

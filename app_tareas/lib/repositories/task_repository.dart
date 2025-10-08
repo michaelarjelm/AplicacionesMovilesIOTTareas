@@ -32,6 +32,10 @@ class TaskRepository {
     return snap.docs.map((d) => (id: d.id, task: _fromDoc(d))).toList();
   }
 
+  Future<void> setDone(String id, bool done) async {
+    await _col.doc(id).update({"done": done});
+  }
+
   Future<List<({String id, Task task})>> findFiltered({
     required TaskFilter filter,
     required String query,
@@ -58,6 +62,10 @@ class TaskRepository {
     final snap = await q.get();
 
     return snap.docs.map((d) => (id: d.id, task: _fromDoc(d))).toList();
+  }
+
+  Future<void> delete(String id) async {
+    await _col.doc(id).delete();
   }
 }
 
